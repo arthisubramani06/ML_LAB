@@ -1,0 +1,31 @@
+import numpy as np
+
+# Dataset
+X_train = np.array([800, 1000, 1200, 1500, 1800, 2000])
+Y_train = np.array([20, 25, 30, 38, 45, 50])
+
+# Test example
+x_test = 1400
+
+# Bandwidth parameter (controls "locality")
+tau = 200  # adjust for more/less smoothing
+
+# Add bias term
+X_b = np.vstack((np.ones(len(X_train)), X_train)).T
+x_test_b = np.array([1, x_test])
+
+# Compute weights for each training point
+weights = np.exp(-((X_train - x_test)**2) / (2 * tau**2))
+W = np.diag(weights)
+
+# Compute theta: theta = (X^T W X)^-1 X^T W Y
+theta = np.linalg.inv(X_b.T @ W @ X_b) @ X_b.T @ W @ Y_train
+
+# Predict price
+y_pred = x_test_b @ theta
+
+print(f"Predicted price for house size {x_test} sq.ft = ₹ {y_pred:.2f} Lakhs")
+
+output:
+
+Predicted price for house size 1400 sq.ft = ₹ 35.26 Lakhs
