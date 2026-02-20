@@ -1,0 +1,60 @@
+import numpy as np
+from scipy.stats import binom
+
+# Observed dataset
+heads = np.array([5, 9, 8, 4, 7])
+trials = 10
+n_trials = len(heads)
+
+# Initialize coin probabilities
+p_A = 0.6
+p_B = 0.5
+P_A = 0.5  # prior probability for coin selection
+P_B = 0.5
+
+# EM iterations
+for iteration in range(20):
+    # ----- E-step -----
+    gamma_A = np.zeros(n_trials)
+    gamma_B = np.zeros(n_trials)
+    
+    for i, h in enumerate(heads):
+        # likelihood
+        L_A = binom.pmf(h, trials, p_A)
+        L_B = binom.pmf(h, trials, p_B)
+        # posterior probability that this trial used Coin A/B
+        gamma_A[i] = (L_A * P_A) / (L_A * P_A + L_B * P_B)
+        gamma_B[i] = 1 - gamma_A[i]
+    
+    # ----- M-step -----
+    p_A = np.sum(gamma_A * heads) / np.sum(gamma_A * trials)
+    p_B = np.sum(gamma_B * heads) / np.sum(gamma_B * trials)
+    
+    print(f"Iteration {iteration+1}: p_A = {p_A:.4f}, p_B = {p_B:.4f}")
+
+# Final estimated probabilities
+print(f"\nEstimated Coin Probabilities: p_A = {p_A:.4f}, p_B = {p_B:.4f}")
+
+output:
+Iteration 1: p_A = 0.7130, p_B = 0.5813
+Iteration 2: p_A = 0.7453, p_B = 0.5693
+Iteration 3: p_A = 0.7681, p_B = 0.5495
+Iteration 4: p_A = 0.7832, p_B = 0.5346
+Iteration 5: p_A = 0.7911, p_B = 0.5263
+Iteration 6: p_A = 0.7945, p_B = 0.5224
+Iteration 7: p_A = 0.7959, p_B = 0.5207
+Iteration 8: p_A = 0.7965, p_B = 0.5200
+Iteration 9: p_A = 0.7967, p_B = 0.5198
+Iteration 10: p_A = 0.7967, p_B = 0.5197
+Iteration 11: p_A = 0.7968, p_B = 0.5196
+Iteration 12: p_A = 0.7968, p_B = 0.5196
+Iteration 13: p_A = 0.7968, p_B = 0.5196
+Iteration 14: p_A = 0.7968, p_B = 0.5196
+Iteration 15: p_A = 0.7968, p_B = 0.5196
+Iteration 16: p_A = 0.7968, p_B = 0.5196
+Iteration 17: p_A = 0.7968, p_B = 0.5196
+Iteration 18: p_A = 0.7968, p_B = 0.5196
+Iteration 19: p_A = 0.7968, p_B = 0.5196
+Iteration 20: p_A = 0.7968, p_B = 0.5196
+
+Estimated Coin Probabilities: p_A = 0.7968, p_B = 0.5196
