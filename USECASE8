@@ -1,0 +1,51 @@
+import numpy as np
+from collections import Counter
+
+# Training data
+X_train = np.array([
+    [2, 30],
+    [3, 35],
+    [5, 60],
+    [6, 65],
+    [8, 80],
+    [1, 25]
+])
+y_train = np.array(['Fail', 'Fail', 'Pass', 'Pass', 'Pass', 'Fail'])
+
+# Test student
+X_test = np.array([4, 50])
+
+# Euclidean distance function
+def euclidean_distance(x1, x2):
+    return np.sqrt(np.sum((x1 - x2)**2))
+
+# KNN prediction
+def knn_predict(X_train, y_train, X_test, k=3):
+    distances = []
+    for i, x in enumerate(X_train):
+        dist = euclidean_distance(x, X_test)
+        distances.append((dist, y_train[i]))
+    # Sort by distance
+    distances.sort(key=lambda x: x[0])
+    # Take k nearest neighbors
+    neighbors = distances[:k]
+    # Majority vote
+    classes = [label for _, label in neighbors]
+    majority_class = Counter(classes).most_common(1)[0][0]
+    return majority_class, neighbors
+
+# Predict
+k = 3
+prediction, neighbors = knn_predict(X_train, y_train, X_test, k)
+print(f"Predicted Result: {prediction}")
+print("Nearest Neighbors (Distance, Class):")
+for dist, cls in neighbors:
+    print(f"{dist:.2f}, {cls}")
+
+output:
+
+Predicted Result: Pass
+Nearest Neighbors (Distance, Class):
+10.05, Pass
+15.03, Fail
+15.13, Pass
