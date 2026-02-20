@@ -1,0 +1,44 @@
+# Bayesian Network for Student Performance
+
+# Prior
+P_pass = {'Yes': 4/6, 'No': 2/6}
+
+# Conditional Probabilities
+P_StudyHours_given_Pass = {
+    'Yes': {'High': 0.75, 'Low': 0.25},
+    'No':  {'High': 0.0,  'Low': 1.0}
+}
+
+P_Attendance_given_Pass = {
+    'Yes': {'High': 0.75, 'Low': 0.25},
+    'No':  {'High': 0.0,  'Low': 1.0}
+}
+
+# Evidence
+evidence = {'StudyHours':'High', 'Attendance':'High'}
+
+# Compute posterior probabilities (unnormalized)
+posterior_yes = P_pass['Yes'] * \
+                P_StudyHours_given_Pass['Yes'][evidence['StudyHours']] * \
+                P_Attendance_given_Pass['Yes'][evidence['Attendance']]
+
+posterior_no = P_pass['No'] * \
+               P_StudyHours_given_Pass['No'][evidence['StudyHours']] * \
+               P_Attendance_given_Pass['No'][evidence['Attendance']]
+
+# Normalize
+total = posterior_yes + posterior_no
+P_yes_given_evidence = posterior_yes / total if total != 0 else 0
+P_no_given_evidence = posterior_no / total if total != 0 else 0
+
+print(f"P(Pass=Yes | Evidence) = {P_yes_given_evidence:.3f}")
+print(f"P(Pass=No | Evidence) = {P_no_given_evidence:.3f}")
+
+# Prediction
+prediction = 'Yes' if P_yes_given_evidence > P_no_given_evidence else 'No'
+print(f"Predicted: Pass = {prediction}")
+
+output:
+P(Pass=Yes | Evidence) = 1.000
+P(Pass=No | Evidence) = 0.000
+Predicted: Pass = Yes
