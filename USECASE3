@@ -1,0 +1,122 @@
+import numpy as np
+
+# ----------------------------
+# Activation Functions
+# ----------------------------
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(x):
+    return x * (1 - x)  # x is sigmoid output
+
+def softmax(x):
+    exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=1, keepdims=True)
+
+# ----------------------------
+# Loss Function: Cross-Entropy
+# ----------------------------
+def cross_entropy_loss(y_true, y_pred):
+    m = y_true.shape[0]
+    # clip to avoid log(0)
+    y_pred = np.clip(y_pred, 1e-12, 1.0)
+    return -np.sum(y_true * np.log(y_pred)) / m
+
+# ----------------------------
+# One-Hot Encoding
+# ----------------------------
+def one_hot(labels, num_classes):
+    return np.eye(num_classes)[labels]
+
+# ----------------------------
+# Initialize ANN Parameters
+# ----------------------------
+input_size = 784    # 28x28 pixels
+hidden_size = 128
+output_size = 10    # digits 0-9
+learning_rate = 0.1
+
+# Weights initialization
+np.random.seed(42)
+W1 = np.random.randn(input_size, hidden_size) * 0.01
+b1 = np.zeros((1, hidden_size))
+W2 = np.random.randn(hidden_size, output_size) * 0.01
+b2 = np.zeros((1, output_size))
+
+# ----------------------------
+# Forward Propagation
+# ----------------------------
+def forward(X):
+    Z1 = np.dot(X, W1) + b1
+    A1 = sigmoid(Z1)
+    Z2 = np.dot(A1, W2) + b2
+    A2 = softmax(Z2)
+    cache = (Z1, A1, Z2, A2)
+    return A2, cache
+
+# ----------------------------
+# Backpropagation
+# ----------------------------
+def backward(X, Y, cache):
+    global W1, b1, W2, b2
+    m = X.shape[0]
+    Z1, A1, Z2, A2 = cache
+    
+    # Output layer gradient
+    dZ2 = A2 - Y  # (m x 10)
+    dW2 = np.dot(A1.T, dZ2) / m
+    db2 = np.sum(dZ2, axis=0, keepdims=True) / m
+    
+    # Hidden layer gradient
+    dA1 = np.dot(dZ2, W2.T)
+    dZ1 = dA1 * sigmoid_derivative(A1)
+    dW1 = np.dot(X.T, dZ1) / m
+    db1 = np.sum(dZ1, axis=0, keepdims=True) / m
+    
+    # Update weights
+    W1 -= learning_rate * dW1
+    b1 -= learning_rate * db1
+    W2 -= learning_rate * dW2
+    b2 -= learning_rate * db2
+
+# ----------------------------
+# Training Function
+# ----------------------------
+def train(X_train, y_train, epochs=50):
+    Y_train = one_hot(y_train, output_size)
+    for epoch in range(epochs):
+        # Forward
+        A2, cache = forward(X_train)
+        # Compute loss
+        loss = cross_entropy_loss(Y_train, A2)
+        # Backward
+        backward(X_train, Y_train, cache)
+        if (epoch+1) % 5 == 0:
+            print(f"Epoch {epoch+1}/{epochs}, Loss: {loss:.4f}")
+
+# ----------------------------
+# Prediction
+# ----------------------------
+def predict(X):
+    A2, _ = forward(X)
+    return np.argmax(A2, axis=1)
+
+# ----------------------------
+# Example Usage with Random Data
+# ----------------------------
+# Suppose we have 100 training images
+X_train = np.random.rand(100, 784)  # 100 samples, 28x28 pixels flattened
+y_train = np.random.randint(0, 10, 100)
+
+train(X_train, y_train, epochs=20)
+
+# Predict on the same data
+y_pred = predict(X_train)
+print("Sample predictions:", y_pred[:10])
+
+OUTPUT:
+Epoch 5/20, Loss: 2.2900
+Epoch 10/20, Loss: 2.2889
+Epoch 15/20, Loss: 2.2884
+Epoch 20/20, Loss: 2.2879
+Sample predictions: [0 0 0 0 0 0 0 0 0 0]
