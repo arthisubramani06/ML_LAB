@@ -1,0 +1,53 @@
+import numpy as np
+
+# Dataset
+X = np.array([
+    [1, 1, 1],
+    [1, 0, 1],
+    [0, 1, 0],
+    [0, 0, 1],
+    [0, 0, 0],
+    [1, 0, 0]
+])
+y = np.array([1, 1, 1, 0, 0, 0])  # Spam: 1=Yes, 0=No
+
+# Split by class
+X_yes = X[y==1]
+X_no  = X[y==0]
+
+# Compute prior probabilities
+P_yes = len(X_yes)/len(X)
+P_no  = len(X_no)/len(X)
+
+# Compute mean and variance for each feature per class
+mean_yes = X_yes.mean(axis=0)
+var_yes  = X_yes.var(axis=0) + 1e-6  # small value to avoid division by zero
+
+mean_no = X_no.mean(axis=0)
+var_no  = X_no.var(axis=0) + 1e-6
+
+# Gaussian likelihood
+def gaussian_likelihood(x, mean, var):
+    return (1/np.sqrt(2*np.pi*var)) * np.exp(-(x-mean)**2/(2*var))
+
+# New Email
+x_new = np.array([1, 1, 0])  # Free=Yes, Win=Yes, Offer=No
+
+# Compute posterior probability
+likelihood_yes = np.prod(gaussian_likelihood(x_new, mean_yes, var_yes))
+posterior_yes = P_yes * likelihood_yes
+
+likelihood_no = np.prod(gaussian_likelihood(x_new, mean_no, var_no))
+posterior_no = P_no * likelihood_no
+
+print(f"P(Spam=Yes|Email) = {posterior_yes:.4f}")
+print(f"P(Spam=No|Email) = {posterior_no:.4f}")
+
+# Prediction
+prediction = 'Yes' if posterior_yes > posterior_no else 'No'
+print(f"Predicted class: Spam = {prediction}")
+
+output:
+P(Spam=Yes|Email) = 0.0676
+P(Spam=No|Email) = 0.0000
+Predicted class: Spam = Yes
